@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.Components
 @using CPC.Data
+@inject IPersonService PersonService
 
 <PageTitle>Customer Preference Centre</PageTitle>
 
@@ -39,12 +40,26 @@
     private string FrequencyValue { get; set; }
     string _report = "Report will be generated here.";
     private MudTextField<string> multilineReference;
+    private List<Person> People { get; set; } = new List<Person>();
 
-    private void SavePreferences(){}
+
+    private void SavePreferences()
+    {
+        var person = PersonService.CreatePerson(FrequencyValue, _selectedDate, SelectedOption);
+        var findPerson = People.FirstOrDefault(x => x.Name == person.Name);
+        if (findPerson is null)
+        {
+            People.Add(person);
+        }
+        else
+        {
+            People.FirstOrDefault(x => x.Name == person.Name)!.Name = person.Name;
+            People.FirstOrDefault(x => x.Name == person.Name)!.Preferences = person.Preferences;
+        }
+    }
+    
     private void GenerateReport(){}
     private void Reset(){}
-
-
-
+    
 
 }
