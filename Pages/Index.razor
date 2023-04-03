@@ -44,6 +44,19 @@
     private MudTextField<string> multilineReference;
     private List<Person> People { get; set; } = new List<Person>();
 
+    protected override Task OnInitializedAsync()
+    {
+        Reset();
+        return Task.CompletedTask;
+    }
+    
+    private void Reset()
+    {
+        FrequencyValue = null;
+        SelectedOption = null;
+        _selectedDate = DateTime.Today;
+        People = new List<Person>();
+    }
 
     private void SavePreferences()
     {
@@ -64,7 +77,4 @@
     {
         _report = ReportingService.GenerateReport(People);
     }
-    private void Reset(){}
-    
-
 }
