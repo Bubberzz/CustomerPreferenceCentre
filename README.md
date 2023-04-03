@@ -35,3 +35,5 @@ abridged output beginning in April would be:
 The input/output format is yours to decide. You should aim to design a ‘turn-key’ solution but
 appropriate documentation is also welcome. Please use a technology you are comfortable in
 as you will be asked to extend your solution as part of a pair-programming exercise
+
+https://github.com/Bubberzz/CustomerPreferenceCentre/blob/main/images/image.png
