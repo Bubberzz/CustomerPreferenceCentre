@@ -37,5 +37,5 @@ appropriate documentation is also welcome. Please use a technology you are comfo
 as you will be asked to extend your solution as part of a pair-programming exercise
 
 
-![alt text]([http://url/to/img.png](https://github.com/Bubberzz/CustomerPreferenceCentre/blob/main/images/image.png))
+<img src="images/image.png" width="1000"> </br> </br>
 
