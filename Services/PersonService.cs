@@ -1,7 +1,8 @@
 using CPC.Data;
+using CPC.Interfaces;
 using static System.Enum;
 
-namespace CPC;
+namespace CPC.Services;
 
 public class PersonService : IPersonService
 {
@@ -49,9 +50,4 @@ public class PersonService : IPersonService
 
         return person;
     }
-}
-
-public interface IPersonService
-{
-    public Person CreatePerson(string frequency, DateTime? selectedDate, string name);
 }
