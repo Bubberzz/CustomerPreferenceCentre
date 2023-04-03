@@ -1,7 +1,50 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components
+@using CPC.Data
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Customer Preference Centre</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Hello, world!</MudText>
-<MudText Class="mb-8">Welcome to your new app, powered by MudBlazor!</MudText>
-<MudAlert Severity="Severity.Normal">You can find documentation and examples on our website here: <MudLink Href="https://mudblazor.com" Typo="Typo.body2" Color="Color.Inherit"><b>www.mudblazor.com</b></MudLink></MudAlert>
+<MudText Typo="Typo.h3" GutterBottom="true">Customer Preference Centre</MudText>
+
+<MudForm>
+    <MudRadioGroup @bind-SelectedOption="@SelectedOption">
+        <MudRadio Option="@("A")" Color="Color.Primary">Person A</MudRadio>
+        <MudRadio Option="@("B")" Color="Color.Primary">Person B</MudRadio>
+        <MudRadio Option="@("C")" Color="Color.Primary">Person C</MudRadio>
+    </MudRadioGroup>
+</MudForm>
+
+<MudDatePicker Label="Select date" @bind-Date="_selectedDate" DateFormat="dd/MM/yyyy" />
+
+<MudSelect @bind-Value="FrequencyValue" Label="Frequency" Placeholder="Please select frequency" AdornmentColor="Color.Primary">
+    <MudSelectItem Value="@(Frequency.Daily.ToString())">Daily</MudSelectItem>
+    <MudSelectItem Value="@(Frequency.Weekly.ToString())">Weekly</MudSelectItem>
+    <MudSelectItem Value="@(Frequency.Monthly.ToString())">Monthly</MudSelectItem>
+    <MudSelectItem Value="@(Frequency.Never.ToString())">Never</MudSelectItem>
+</MudSelect>
+
+<MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="SavePreferences">Save Preferences</MudButton>
+<MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="GenerateReport">Generate Report</MudButton>
+
+<div class="d-flex align-center">
+    <MudButton Variant="Variant.Outlined" OnClick="Reset">Reset</MudButton>
+    <MudText Class="ml-4">Selected Person: @SelectedOption</MudText>
+</div>
+
+<MudTextField @ref="multilineReference" T="string" Label="Report" Variant="Variant.Filled" Text="@_report" Lines="10" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.CenterFocusWeak" OnAdornmentClick="@(() => multilineReference.FocusAsync())"  />
+
+@code {
+    public string SelectedOption { get; set; }
+    DateTime? _selectedDate = DateTime.Today;
+    private string FrequencyValue { get; set; }
+    string _report = "Report will be generated here.";
+    private MudTextField<string> multilineReference;
+
+    private void SavePreferences(){}
+    private void GenerateReport(){}
+    private void Reset(){}
+
+
+
+
+}
