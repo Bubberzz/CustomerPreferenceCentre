@@ -5,5 +5,6 @@ public enum Frequency
     Daily,
     Weekly,
     Monthly,
-    Never 
+    Never,
+    SpecificDays
 }

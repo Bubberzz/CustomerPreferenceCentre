@@ -1,8 +1,4 @@
-using CPC;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
-using CPC.Data;
 using CPC.Interfaces;
 using CPC.Services;
 using MudBlazor.Services;

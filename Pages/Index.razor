@@ -1,7 +1,6 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Components
-@using CPC.Data
 @using CPC.Interfaces
+@using CPC.Data
 @inject IPersonService PersonService
 @inject IReportingService ReportingService
 
@@ -9,58 +8,137 @@
 
 <MudText Typo="Typo.h3" GutterBottom="true">Customer Preference Centre</MudText>
 
-<MudForm>
-    <MudRadioGroup @bind-SelectedOption="@SelectedOption">
-        <MudRadio Option="@("A")" Color="Color.Primary">Person A</MudRadio>
-        <MudRadio Option="@("B")" Color="Color.Primary">Person B</MudRadio>
-        <MudRadio Option="@("C")" Color="Color.Primary">Person C</MudRadio>
-    </MudRadioGroup>
-</MudForm>
-
-<MudDatePicker Label="Select date" @bind-Date="_selectedDate" DateFormat="dd/MM/yyyy" />
-
-<MudSelect @bind-Value="FrequencyValue" Label="Frequency" Placeholder="Please select frequency" AdornmentColor="Color.Primary">
-    <MudSelectItem Value="@(Frequency.Daily.ToString())">Daily</MudSelectItem>
-    <MudSelectItem Value="@(Frequency.Weekly.ToString())">Weekly</MudSelectItem>
-    <MudSelectItem Value="@(Frequency.Monthly.ToString())">Monthly</MudSelectItem>
-    <MudSelectItem Value="@(Frequency.Never.ToString())">Never</MudSelectItem>
-</MudSelect>
-
-<MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="SavePreferences">Save Preferences</MudButton>
-<MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="GenerateReport">Generate Report</MudButton>
-
-<div class="d-flex align-center">
-    <MudButton Variant="Variant.Outlined" OnClick="Reset">Reset</MudButton>
-    <MudText Class="ml-4">Selected Person: @SelectedOption</MudText>
-</div>
-
-<MudTextField @ref="multilineReference" T="string" Label="Report" Variant="Variant.Filled" Text="@_report" Lines="10" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.CenterFocusWeak" OnAdornmentClick="@(() => multilineReference.FocusAsync())"  />
+<MudGrid Align="Align.Left">
+    <MudItem xs="7">
+        <MudForm>
+            <MudRadioGroup @bind-SelectedOption="@SelectedOption">
+                <MudRadio Option="@("A")" Color="Color.Primary">Person A</MudRadio>
+                <MudRadio Option="@("B")" Color="Color.Primary">Person B</MudRadio>
+                <MudRadio Option="@("C")" Color="Color.Primary">Person C</MudRadio>
+            </MudRadioGroup>
+        </MudForm>
+    </MudItem>
+    <MudItem xs="7">
+        <MudDatePicker Label="Select date" @bind-Date="_selectedDate" DateFormat="dd/MM/yyyy"/>
+    </MudItem>
+    <MudItem xs="7">
+        <MudSelect @bind-Value="@FrequencyValue" Label="Frequency" Placeholder="Please select frequency" AdornmentColor="Color.Primary">
+            <MudSelectItem Value="@(Frequency.Daily.ToString())">Daily</MudSelectItem>
+            <MudSelectItem Value="@(Frequency.Weekly.ToString())">Weekly</MudSelectItem>
+            <MudSelectItem Value="@(Frequency.Monthly.ToString())">Monthly</MudSelectItem>
+            <MudSelectItem Value="@(Frequency.SpecificDays.ToString())">Specific days (select below)</MudSelectItem>
+            <MudSelectItem Value="@(Frequency.Never.ToString())">Never</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="7">
+        <MudCheckBox @bind-Checked="@Mon_CheckBox" Label="Mon" Color="Color.Primary"></MudCheckBox>
+        <MudCheckBox @bind-Checked="@Tues_CheckBox" Label="Tues" Color="Color.Primary"></MudCheckBox>
+        <MudCheckBox @bind-Checked="@Weds_CheckBox" Label="Weds" Color="Color.Primary"></MudCheckBox>
+        <MudCheckBox @bind-Checked="@Thurs_CheckBox" Label="Thurs" Color="Color.Primary"></MudCheckBox>
+        <MudCheckBox @bind-Checked="@Fri_CheckBox" Label="Fri" Color="Color.Primary"></MudCheckBox>
+        <MudCheckBox @bind-Checked="@Sat_CheckBox" Label="Sat" Color="Color.Primary"></MudCheckBox>
+        <MudCheckBox @bind-Checked="@Sun_CheckBox" Label="Sun" Color="Color.Primary"></MudCheckBox>
+    </MudItem>
+    <MudItem xs="7">
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="@(async () => await SavePreferences())">Save Preferences</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="GenerateReport">Generate Report</MudButton>
+    </MudItem>
+    <MudItem xs="7">
+        <div class="d-flex align-center">
+            <MudButton Variant="Variant.Outlined" OnClick="Reset">Reset</MudButton>
+            <MudText Class="ml-4">@Feedback</MudText>
+        </div>
+    </MudItem>
+    <MudItem xs="7">
+        <MudTextField @ref="multilineReference" T="string" Label="Report" Variant="Variant.Filled" Text="@_report" Lines="10" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.CenterFocusWeak" OnAdornmentClick="@(() => multilineReference.FocusAsync())"/>
+    </MudItem>
+</MudGrid>
 
 @code {
-    public string SelectedOption { get; set; }
-    DateTime? _selectedDate = DateTime.Today;
+
+    private bool Mon_CheckBox { get; set; }
+    private bool Tues_CheckBox { get; set; }
+    private bool Weds_CheckBox { get; set; }
+    private bool Thurs_CheckBox { get; set; }
+    private bool Fri_CheckBox { get; set; }
+    private bool Sat_CheckBox { get; set; }
+    private bool Sun_CheckBox { get; set; }
+    private string SelectedOption { get; set; }
     private string FrequencyValue { get; set; }
-    string _report = "Report will be generated here.";
+    private string Feedback { get; set; }
+    private string _report = "Report will be generated here.";
+    private DateTime? _selectedDate = DateTime.Today;
     private MudTextField<string> multilineReference;
-    private List<Person> People { get; set; } = new List<Person>();
+    private List<Person> People { get; set; } = new();
 
     protected override Task OnInitializedAsync()
     {
         Reset();
         return Task.CompletedTask;
     }
-    
+
     private void Reset()
     {
         FrequencyValue = null;
         SelectedOption = null;
         _selectedDate = DateTime.Today;
         People = new List<Person>();
+        Mon_CheckBox = false;
+        Tues_CheckBox = false;
+        Weds_CheckBox = false;
+        Thurs_CheckBox = false;
+        Fri_CheckBox = false;
+        Sat_CheckBox = false;
+        Sun_CheckBox = false;
     }
 
-    private void SavePreferences()
+    private List<DayOfWeek> GetDaysOfWeek()
     {
-        var person = PersonService.CreatePerson(FrequencyValue, _selectedDate, SelectedOption);
+        var days = new List<DayOfWeek>();
+
+        if (Mon_CheckBox)
+        {
+            days.Add(DayOfWeek.Monday);
+        }
+
+        if (Tues_CheckBox)
+        {
+            days.Add(DayOfWeek.Tuesday);
+        }
+
+        if (Weds_CheckBox)
+        {
+            days.Add(DayOfWeek.Wednesday);
+        }
+
+        if (Thurs_CheckBox)
+        {
+            days.Add(DayOfWeek.Thursday);
+        }
+
+        if (Fri_CheckBox)
+        {
+            days.Add(DayOfWeek.Friday);
+        }
+
+        if (Sat_CheckBox)
+        {
+            days.Add(DayOfWeek.Saturday);
+        }
+
+        if (Sun_CheckBox)
+        {
+            days.Add(DayOfWeek.Sunday);
+        }
+
+        return days;
+    }
+
+    async Task SavePreferences()
+    {
+        var daysOfWeek = GetDaysOfWeek();
+
+        var person = PersonService.CreatePerson(FrequencyValue, _selectedDate, daysOfWeek, SelectedOption);
         var findPerson = People.FirstOrDefault(x => x.Name == person.Name);
         if (findPerson is null)
         {
@@ -69,12 +147,16 @@
         else
         {
             People.FirstOrDefault(x => x.Name == person.Name)!.Name = person.Name;
-            People.FirstOrDefault(x => x.Name == person.Name)!.Preferences = person.Preferences;
+            People.FirstOrDefault(x => x.Name == person.Name)!.NotificationDates = person.NotificationDates;
         }
+        Feedback = "Saved!";
+        await Task.Delay(1000);
+        Feedback = null;
     }
 
     private void GenerateReport()
     {
         _report = ReportingService.GenerateReport(People);
     }
+
 }

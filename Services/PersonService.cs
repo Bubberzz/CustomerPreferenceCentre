@@ -6,7 +6,7 @@ namespace CPC.Services;
 
 public class PersonService : IPersonService
 {
-    public Person CreatePerson(string frequency, DateTime? selectedDate, string name)
+    public Person CreatePerson(string frequency, DateTime? selectedDate, List<DayOfWeek> daysOfWeek, string name)
     {
         var dateTime = selectedDate ?? DateTime.Today;
 
@@ -14,36 +14,36 @@ public class PersonService : IPersonService
 
         var person = new Person
         {
-            Preferences = new List<DateTime?>(),
+            NotificationDates = new List<DateTime?>(),
+            NotificationDays = new List<DayOfWeek>(),
             Name = name
         };
-        
+
         switch (Frequency)
         {
             case Frequency.Daily:
             {
-                for (var i = 0; i < 90; i++)
-                {
-                    person.Preferences.Add(dateTime.AddDays(i));
-                }
+                for (var i = 0; i < 90; i++) person.NotificationDates.Add(dateTime.AddDays(i));
                 break;
             }
             case Frequency.Weekly:
             {
-                for (var i = 0; i < 90; i+=7)
-                {
-                    person.Preferences.Add(dateTime.AddDays(i));
-                }
+                for (var i = 0; i < 90; i += 7) person.NotificationDates.Add(dateTime.AddDays(i));
                 break;
             }
             case Frequency.Monthly:
             {
-                for (var i = 0; i < 3; i++)
-                {
-                    person.Preferences.Add(dateTime.AddMonths(i));
-                }
+                for (var i = 0; i < 3; i++) person.NotificationDates.Add(dateTime.AddMonths(i));
                 break;
             }
+            case Frequency.SpecificDays:
+            {
+                for (var i = 0; i < 90; i++)
+                    if (daysOfWeek.Contains(dateTime.AddDays(i).DayOfWeek))
+                        person.NotificationDates.Add(dateTime.AddDays(i));
+                break;
+            }
+            case Frequency.Never:
             default:
                 return person;
         }

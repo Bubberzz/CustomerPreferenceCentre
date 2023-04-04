@@ -4,6 +4,6 @@ namespace CPC.Interfaces;
 
 public interface IPersonService
 {
-    public Person CreatePerson(string frequency, DateTime? selectedDate, string name);
+    public Person CreatePerson(string frequency, DateTime? selectedDate, List<DayOfWeek> daysOfWeek, string name);
 
 }
