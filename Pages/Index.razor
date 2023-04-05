@@ -11,7 +11,7 @@
 <MudGrid Align="Align.Left">
     <MudItem xs="7">
         <MudForm>
-            <MudRadioGroup @bind-SelectedOption="@SelectedOption">
+            <MudRadioGroup @bind-SelectedOption="@SelectedPerson">
                 <MudRadio Option="@("A")" Color="Color.Primary">Person A</MudRadio>
                 <MudRadio Option="@("B")" Color="Color.Primary">Person B</MudRadio>
                 <MudRadio Option="@("C")" Color="Color.Primary">Person C</MudRadio>
@@ -22,12 +22,12 @@
         <MudDatePicker Label="Select date" @bind-Date="_selectedDate" DateFormat="dd/MM/yyyy"/>
     </MudItem>
     <MudItem xs="7">
-        <MudSelect @bind-Value="@FrequencyValue" Label="Frequency" Placeholder="Please select frequency" AdornmentColor="Color.Primary">
-            <MudSelectItem Value="@(Frequency.Daily.ToString())">Daily</MudSelectItem>
-            <MudSelectItem Value="@(Frequency.Weekly.ToString())">Weekly</MudSelectItem>
-            <MudSelectItem Value="@(Frequency.Monthly.ToString())">Monthly</MudSelectItem>
-            <MudSelectItem Value="@(Frequency.SpecificDays.ToString())">Specific days (select below)</MudSelectItem>
-            <MudSelectItem Value="@(Frequency.Never.ToString())">Never</MudSelectItem>
+        <MudSelect @bind-Value="@Frequency" Label="Frequency" Placeholder="Please select frequency" AdornmentColor="Color.Primary">
+            <MudSelectItem Value="@(Data.Frequency.Daily.ToString())">Daily</MudSelectItem>
+            <MudSelectItem Value="@(Data.Frequency.Weekly.ToString())">Weekly</MudSelectItem>
+            <MudSelectItem Value="@(Data.Frequency.Monthly.ToString())">Monthly</MudSelectItem>
+            <MudSelectItem Value="@(Data.Frequency.SpecificDays.ToString())">Specific days (select below)</MudSelectItem>
+            <MudSelectItem Value="@(Data.Frequency.Never.ToString())">Never</MudSelectItem>
         </MudSelect>
     </MudItem>
     <MudItem xs="7">
@@ -43,7 +43,7 @@
     </MudItem>
     <MudItem xs="7">
         <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="@(async () => await SavePreferences())">Save Preferences</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="GenerateReport">Generate Report</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="@(async () => await GenerateReport())">Generate Report</MudButton>
     </MudItem>
     <MudItem xs="7">
         <div class="d-flex align-center">
@@ -65,24 +65,25 @@
     private bool Fri_CheckBox { get; set; }
     private bool Sat_CheckBox { get; set; }
     private bool Sun_CheckBox { get; set; }
-    private string SelectedOption { get; set; }
-    private string FrequencyValue { get; set; }
-    private string Feedback { get; set; }
-    private string _report = "Report will be generated here.";
-    private DateTime? _selectedDate = DateTime.Today;
-    private MudTextField<string> multilineReference;
-    private List<Person> People { get; set; } = new();
+    private string SelectedPerson { get; set; }
+    private string Frequency { get; set; }
 
-    protected override Task OnInitializedAsync()
+    private string Feedback;
+    private string _report;
+    private DateTime? _selectedDate;
+    private MudTextField<string> multilineReference;
+    private List<Person> People;
+
+    protected override async Task OnInitializedAsync()
     {
-        Reset();
-        return Task.CompletedTask;
+        await Reset();
     }
 
-    private void Reset()
+    async Task Reset()
     {
-        FrequencyValue = null;
-        SelectedOption = null;
+        Frequency = null;
+        SelectedPerson = null;
+        Feedback = null;
         _selectedDate = DateTime.Today;
         People = new List<Person>();
         Mon_CheckBox = false;
@@ -92,9 +93,10 @@
         Fri_CheckBox = false;
         Sat_CheckBox = false;
         Sun_CheckBox = false;
+        _report = "Report will be generated here.";
     }
 
-    private List<DayOfWeek> GetDaysOfWeek()
+    async Task<List<DayOfWeek>> GetDaysOfWeek()
     {
         var days = new List<DayOfWeek>();
 
@@ -138,27 +140,43 @@
 
     async Task SavePreferences()
     {
-        var daysOfWeek = GetDaysOfWeek();
-
-        var person = PersonService.CreatePerson(FrequencyValue, _selectedDate, daysOfWeek, SelectedOption);
-        var findPerson = People.FirstOrDefault(x => x.Name == person.Name);
-        if (findPerson is null)
+        if (SelectedPerson is null || Frequency is null)
         {
-            People.Add(person);
+            Feedback = "Please select all preferences";
+            await Task.Delay(1000);
+            Feedback = null;
         }
         else
         {
-            People.FirstOrDefault(x => x.Name == person.Name)!.Name = person.Name;
-            People.FirstOrDefault(x => x.Name == person.Name)!.NotificationDates = person.NotificationDates;
+            var person = PersonService.CreatePerson(Frequency, _selectedDate, await GetDaysOfWeek(), SelectedPerson);
+            var findPerson = People.FirstOrDefault(x => x.Name == person.Name);
+            if (findPerson is null)
+            {
+                People.Add(person);
+            }
+            else
+            {
+                People.FirstOrDefault(x => x.Name == person.Name)!.Name = person.Name;
+                People.FirstOrDefault(x => x.Name == person.Name)!.NotificationDates = person.NotificationDates;
+            }
+            Feedback = "Saved!";
+            await Task.Delay(1000);
+            Feedback = null;
         }
-        Feedback = "Saved!";
-        await Task.Delay(1000);
-        Feedback = null;
     }
 
-    private void GenerateReport()
+    async Task GenerateReport()
     {
-        _report = ReportingService.GenerateReport(People);
+        if (!People.Any())
+        {
+            Feedback = "Please select all preferences";
+            await Task.Delay(1000);
+            Feedback = null;
+        }
+        else
+        {
+            _report = ReportingService.GenerateReport(People);
+        }
     }
 
 }
